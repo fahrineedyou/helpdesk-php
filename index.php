@@ -1,37 +1,69 @@
 <?php
-include 'koneksi.php'; // Mengambil kabel koneksi
+include "koneksi.php";
+// cek apakah tombol kirim sudah ditekan
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+    // ambil data dari form
+    $nama = $_POST["nama"];
+    $laporan = $_POST["laporan"];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nama = $_POST['nama'];
-    $laporan = $_POST['laporan'];
-
-    // Perintah untuk memasukkan data ke tabel pengaduan
     $query = "INSERT INTO pengaduan (nama, laporan) VALUES ('$nama', '$laporan')";
 
     if (mysqli_query($conn, $query)) {
-        echo "<div style='color: green;'><b>Sukses!</b> Laporan berhasil disimpan ke database.</div>";
+        echo "<div style='color: green;'><b>Sukses!</b>Laporan dari<b>$nama</b>telah diterima: <i>$laporan</i></div><hr>";
     } else {
-        echo "Error: " . mysqli_error($conn);
+        echo "Error: " . $query . "<br>" . mysqli_error($conn);
     }
+   
 }
+// proses ambil data dari database
+$ambil_data =mysqli_query($conn, "SELECT * FROM pengaduan ORDER BY id DESC");
 ?>
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Pengaduan - Helpdesk</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; collapse: margin-top:20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    </style>
 </head>
 <body>
     <h1>Kirim Laporan Pengaduan</h1>
-    <form>
-        <label>Nama Anda:</label><br>
-        <input type="text" name="nama" placeholder="Masukan nama..."><br><br>
+    <form method="POST" action="">
+        <label>Nama anda</label><br>
+        <input type="text" name="nama" placeholder="Masukan nama... "><br><br>
 
-        <label>Isi Laporan:</label><br>
-        <textarea name="laporan" placeholder="Tulis kendala Anda di sini.."></textarea><br><br>
+        <label>Laporan</label><br>
+        <textarea name="laporan" placeholder="Tulis kendala Anda di sini..."></textarea><br><br>
 
         <button type="submit">Kirim Sekarang</button>
     </form>
+    <hr>
+    <h2>Daftar Laporan Masuk</h2>
+    <table>
+        <tr>
+            <th>No</th>
+            <th>Nama Pelapor</th>
+            <th>Laporan</th>
+            <th>Aksi</th>
+        </tr>
+        <?php 
+        $no = 1; 
+        while($row = mysqli_fetch_array($ambil_data)){
+        ?>
+        <tr>
+            <td><?php echo $no++; ?></td>
+            <td><?php echo $row['nama']; ?></td>
+            <td><?php echo $row['laporan']; ?></td>
+            <td>
+    <a href="edit.php?id=<?php echo $row['id']; ?>" style="color: blue;">Edit</a> |
+    <a href="hapus.php?id=<?php echo $row['id']; ?>"
+    onclick="return confirm('Yakin hapus?')" style="color: red;">Hapus</a>
+            </td>
+        </tr>
+        <?php } ?>
+    </table>
 </body>
 </html>
